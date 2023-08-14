@@ -5,3 +5,5 @@
 //函数声明
 void my_wifi_connect();
 void sendDataToPC();
+
+void print_wakeup_reason();

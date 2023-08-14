@@ -40,3 +40,21 @@ void sendDataToPC() {
     Serial.println("无法连接到服务器");
   }
 }
+
+
+
+void print_wakeup_reason(){
+  esp_sleep_wakeup_cause_t wakeup_reason;//生成esp_sleep_wakeup_cause_t类型变量wakeup_reason
+
+  wakeup_reason = esp_sleep_get_wakeup_cause();//获取esp32深度睡眠唤醒原因
+
+  switch(wakeup_reason)//打印对应的唤醒原因
+  {
+    case ESP_SLEEP_WAKEUP_EXT0 : Serial.println("Wakeup caused by external signal using RTC_IO"); break;//外部引脚0产生中断唤醒
+    case ESP_SLEEP_WAKEUP_EXT1 : Serial.println("Wakeup caused by external signal using RTC_CNTL"); break;//外部引脚1产生中断唤醒
+    case ESP_SLEEP_WAKEUP_TIMER : Serial.println("Wakeup caused by timer"); break;//定时器唤醒
+    case ESP_SLEEP_WAKEUP_TOUCHPAD : Serial.println("Wakeup caused by touchpad"); break;//触摸板唤醒
+    case ESP_SLEEP_WAKEUP_ULP : Serial.println("Wakeup caused by ULP program"); break;//ulp协处理器唤醒。
+    default : Serial.printf("Wakeup was not caused by deep sleep: %d\n",wakeup_reason); break;//其它唤醒情况
+  }
+}

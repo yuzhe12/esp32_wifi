@@ -10,17 +10,23 @@ https://blog.csdn.net/qq_30316889/article/details/123451261?ops_request_misc=%25
 
 #include "esp32_sf_fun.h"
 
+#define BUTTON_PIN 0 //设置深度睡眠引脚号
+
 const char* WiFi_name = "One Plus" ;//输入要连接的网络名称
 const char* WiFi_pass = "qwertyuiop";  //输入要连接的网络密码
 
 hw_timer_t *timer = NULL; //创建硬件定时器
 bool flag = false; //创建中断标志位
 
+
+
+
 //定时中断回调函数
 void IRAM_ATTR timer_flag()
 {
   flag = true;//进入定时中断，触发标志位
 }
+
 
 void setup() {
   Serial.begin(115200); //启动串口通讯
@@ -34,9 +40,17 @@ void setup() {
   //配置定时器
   timerAttachInterrupt(timer, &timer_flag, true);//true表示边沿触发，可以设置false改为电平触发
   //设置定时模式
-  timerAlarmWrite(timer, 10*1000, true);//10*1000表示10ms(及100hz)触发一次中断，true表示每0.01ms触发一次，可以设置为false改为多次触发
+  timerAlarmWrite(timer, 10*1000, true);//10*1000表示10ms(及100hz)触发一次中断，true表示每0.01ms触发一次，可以设置为false改为单次触发
   //启动定时器
   timerAlarmEnable(timer);
+
+  //将睡眠引脚号设置为输入模式
+  pinMode(BUTTON_PIN, INPUT);
+
+  //设置唤醒引脚，并打印唤醒原因
+  print_wakeup_reason();//打印唤醒原因
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_13,1); //设置引脚13为唤醒源，1表示为高电平唤醒，当引脚13置为高电平时，esp32唤醒。
+  
 }
 
 void loop()
@@ -45,6 +59,12 @@ void loop()
   {
     sendDataToPC();// 将数据发送给电脑
     flag = false;//复原标志位
+  }
+  if(digitalRead(BUTTON_PIN) == LOW)//判断睡眠引脚是否为低电平，是则进入深度睡眠
+  {
+    Serial.println("Going to sleep now");
+    esp_deep_sleep_start();//进入深度睡眠
+    BUTTON_PIN == LOW;
   }
 }
 
